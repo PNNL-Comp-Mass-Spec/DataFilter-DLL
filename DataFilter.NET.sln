@@ -1,0 +1,29 @@
+Microsoft Visual Studio Solution File, Format Version 8.00
+Project("{F184B08F-C81C-45F6-A57F-5ABD9991F28F}") = "DataFilter.NET", "DataFilter.NET.vbproj", "{5F62994F-A7BB-4611-9E82-5A05870B668B}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
+Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "DataFilterMergeModule", "DataFilterMergeModule\DataFilterMergeModule.vdproj", "{8270DE6B-C6F7-43D1-8E11-9B95BCD91A6B}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfiguration) = preSolution
+		Debug = Debug
+		Release = Release
+	EndGlobalSection
+	GlobalSection(ProjectConfiguration) = postSolution
+		{5F62994F-A7BB-4611-9E82-5A05870B668B}.Debug.ActiveCfg = Debug|.NET
+		{5F62994F-A7BB-4611-9E82-5A05870B668B}.Debug.Build.0 = Debug|.NET
+		{5F62994F-A7BB-4611-9E82-5A05870B668B}.Release.ActiveCfg = Release|.NET
+		{5F62994F-A7BB-4611-9E82-5A05870B668B}.Release.Build.0 = Release|.NET
+		{8270DE6B-C6F7-43D1-8E11-9B95BCD91A6B}.Debug.ActiveCfg = Debug
+		{8270DE6B-C6F7-43D1-8E11-9B95BCD91A6B}.Debug.Build.0 = Debug
+		{8270DE6B-C6F7-43D1-8E11-9B95BCD91A6B}.Release.ActiveCfg = Release
+		{8270DE6B-C6F7-43D1-8E11-9B95BCD91A6B}.Release.Build.0 = Release
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+	EndGlobalSection
+	GlobalSection(ExtensibilityAddIns) = postSolution
+	EndGlobalSection
+EndGlobal
