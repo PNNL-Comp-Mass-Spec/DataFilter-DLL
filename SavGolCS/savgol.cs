@@ -4,9 +4,9 @@ using System.Text;
 using MathNet.Numerics.LinearAlgebra;
 
 /*
- * This  
- * 
- * 
+ * This class implements the savgol savitzky-golay code from Numerical Recipes in C
+ * Ported to C# in September 2001 by Matthew Monroe at PNNL
+ * Uses Matrix class in MathNet.Iridium.dll
  */
 
 namespace SavGolCS {
@@ -15,19 +15,19 @@ namespace SavGolCS {
 
 		private const double TINY = 1.0e-20;
 
-		private void ludcmp(Matrix a, int n, Vector indx, ref double d) {
+		// Linear equation solution, LU decomposition
+		private void ludcmp(Matrix a, int n, int []indx) {
 			int i, imax = 0;
 			int j, k;
 			double dum, sum;
 			double big, temp;
+			// double d = 1.0;
 
 			// double *vv,*vector();
 			// void nrerror(),free_vector();
 
 			// vv=vector(1,n);
-			Vector vv = new Vector(n+1);
-
-			d = 1.0f;
+			double[] vv = new double[n + 1];
 
 			for (i = 1; i <= n; i++) {
 				big = 0.0f;
@@ -69,7 +69,7 @@ namespace SavGolCS {
 						a[imax, k] = a[j, k];
 						a[j, k] = dum;
 					}
-					d = -(d);
+					// d = -(d);
 					vv[imax] = vv[j];
 				}
 				indx[j] = imax;
@@ -84,7 +84,8 @@ namespace SavGolCS {
 
 		}
 
-		private void lubksb(Matrix a, int n, Vector indx, double[] b) {
+		// Linear equation solution, back substitution
+		private void lubksb(Matrix a, int n, int[] indx, double[] b) {
 			int i, ii = 0, ip, j;
 			double sum;
 
@@ -94,13 +95,13 @@ namespace SavGolCS {
 				b[ip] = b[i];
 
 				// if (ii)
-				if (ii != 0)
+				if (ii > 0)
 					for (j = ii; j <= i - 1; j++)
 						sum -= a[i, j] * b[j];
 
 				else {
 					// if (sum) 
-					if (sum != 0)
+					if (sum > 0)
 						ii = i;
 				}
 
@@ -120,7 +121,6 @@ namespace SavGolCS {
 		public int savgol(double[] c, int np, int nl, int nr, int ld, int m) {
 
 			int imj, ipj, j, k, kk, mm;		 // ,*indx;
-			double d = 0;
 			double fac;				 // ,**a,*b;
 			double sum;
 
@@ -131,13 +131,13 @@ namespace SavGolCS {
 			// a=matrix(1,m+1,1,m+1);
 			// b=vector(1,m+1);
 
-			Vector indx = new Vector(m + 2);
+			int[] indx = new int[m + 2];
 			Matrix a = new Matrix(m + 2, m + 2);
-			Vector b = new Vector(m + 2);
+			double[] b = new double[m + 2];
 
 			for (ipj = 0; ipj <= (m << 1); ipj++) {
 				// sum = (ipj ? 0.0 : 1.0);
-				if (ipj != 0)
+				if (ipj > 0)
 					sum = 0;
 				else
 					sum = 1;
@@ -154,8 +154,7 @@ namespace SavGolCS {
 					a[1 + (ipj + imj) / 2, 1 + (ipj - imj) / 2] = sum;
 			}
 
-			// ToDo: update code to not pass d into ludcmp; there is no need to do so
-			ludcmp(a, m + 1, indx, ref d);
+			ludcmp(a, m + 1, indx);
 
 			for (j = 1; j <= m + 1; j++)
 				b[j] = 0.0;
