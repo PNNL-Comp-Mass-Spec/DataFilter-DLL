@@ -1,12 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using MathNet.Numerics.LinearAlgebra;
 
 /*
  * This class implements the savgol savitzky-golay code from Numerical Recipes in C
  * Ported to C# in September 2001 by Matthew Monroe at PNNL
- * Uses Matrix class in MathNet.Iridium.dll
  */
 
 namespace SavGolCS {
@@ -16,7 +14,7 @@ namespace SavGolCS {
 		private const double TINY = 1.0e-20;
 
 		// Linear equation solution, LU decomposition
-		private void ludcmp(Matrix a, int n, int []indx) {
+		private void ludcmp(double[][] a, int n, int []indx) {
 			int i, imax = 0;
 			int j, k;
 			double dum, sum;
@@ -33,7 +31,7 @@ namespace SavGolCS {
 				big = 0.0f;
 
 				for (j = 1; j <= n; j++)
-					if ((temp = Math.Abs(a[i, j])) > big)
+					if ((temp = Math.Abs(a[i][j])) > big)
 						big = temp;
 
 				if (big == 0.0)
@@ -44,19 +42,21 @@ namespace SavGolCS {
 
 			for (j = 1; j <= n; j++) {
 				for (i = 1; i < j; i++) {
-					sum = a[i, j];
+					sum = a[i][j];
 
-					for (k = 1; k < i; k++) sum -= a[i, k] * a[k, j];
-					a[i, j] = sum;
+					for (k = 1; k < i; k++) 
+						sum -= a[i][k] * a[k][j];
+
+					a[i][j] = sum;
 				}
 
 				big = 0.0;
 				for (i = j; i <= n; i++) {
-					sum = a[i, j];
+					sum = a[i][j];
 					for (k = 1; k < j; k++)
-						sum -= a[i, k] * a[k, j];
+						sum -= a[i][k] * a[k][j];
 
-					a[i, j] = sum;
+					a[i][j] = sum;
 
 					if ((dum = vv[i] * Math.Abs(sum)) >= big) {
 						big = dum;
@@ -65,27 +65,28 @@ namespace SavGolCS {
 				}
 				if (j != imax) {
 					for (k = 1; k <= n; k++) {
-						dum = a[imax, k];
-						a[imax, k] = a[j, k];
-						a[j, k] = dum;
+						dum = a[imax][k];
+						a[imax][k] = a[j][k];
+						a[j][k] = dum;
 					}
 					// d = -(d);
 					vv[imax] = vv[j];
 				}
 				indx[j] = imax;
-				if (a[j, j] == 0.0)
-					a[j, j] = TINY;
+				if (a[j][j] == 0.0)
+					a[j][j] = TINY;
 
 				if (j != n) {
-					dum = 1.0 / (a[j, j]);
-					for (i = j + 1; i <= n; i++) a[i, j] *= dum;
+					dum = 1.0 / (a[j][j]);
+					for (i = j + 1; i <= n; i++) 
+						a[i][j] *= dum;
 				}
 			}
 
 		}
 
 		// Linear equation solution, back substitution
-		private void lubksb(Matrix a, int n, int[] indx, double[] b) {
+		private void lubksb(double[][] a, int n, int[] indx, double[] b) {
 			int i, ii = 0, ip, j;
 			double sum;
 
@@ -97,7 +98,7 @@ namespace SavGolCS {
 				// if (ii)
 				if (ii > 0)
 					for (j = ii; j <= i - 1; j++)
-						sum -= a[i, j] * b[j];
+						sum -= a[i][j] * b[j];
 
 				else {
 					// if (sum) 
@@ -111,9 +112,9 @@ namespace SavGolCS {
 			for (i = n; i >= 1; i--) {
 				sum = b[i];
 				for (j = i + 1; j <= n; j++)
-					sum -= a[i, j] * b[j];
+					sum -= a[i][j] * b[j];
 
-				b[i] = sum / a[i, i];
+				b[i] = sum / a[i][i];
 			}
 		}
 
@@ -131,9 +132,17 @@ namespace SavGolCS {
 			// a=matrix(1,m+1,1,m+1);
 			// b=vector(1,m+1);
 
+			// Note that arrays indx, a, and b do not utilize indx[0], a[0][x], or b[0]
+			// This code starts at index 1
+
 			int[] indx = new int[m + 2];
-			Matrix a = new Matrix(m + 2, m + 2);
+			double[][] a = new double[m + 2][];
 			double[] b = new double[m + 2];
+
+			// Initialize 2D array a
+			for (int i = 0; i < a.GetLength(0); i++) {
+				a[i] = new double[m + 2];
+			}
 
 			for (ipj = 0; ipj <= (m << 1); ipj++) {
 				// sum = (ipj ? 0.0 : 1.0);
@@ -151,7 +160,7 @@ namespace SavGolCS {
 				mm = Math.Min(ipj, 2 * m - ipj);
 
 				for (imj = -mm; imj <= mm; imj += 2)
-					a[1 + (ipj + imj) / 2, 1 + (ipj - imj) / 2] = sum;
+					a[1 + (ipj + imj) / 2][1 + (ipj - imj) / 2] = sum;
 			}
 
 			ludcmp(a, m + 1, indx);
