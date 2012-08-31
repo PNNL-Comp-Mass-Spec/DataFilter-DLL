@@ -4,7 +4,7 @@ using System.Text;
 
 /*
  * This class implements the savgol savitzky-golay code from Numerical Recipes in C
- * Ported to C# in September 2001 by Matthew Monroe at PNNL
+ * Ported to C# in September 2011 by Matthew Monroe at PNNL
  */
 
 namespace SavGolCS {
