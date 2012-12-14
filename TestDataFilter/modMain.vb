@@ -48,7 +48,7 @@
 
 		Dim intIterator As Integer = 1
 		Dim strFilePath As String = ""
-		Dim srOutFile As System.IO.StreamWriter
+		Dim srOutFile As System.IO.StreamWriter = Nothing
 		Dim blnSuccess As Boolean
 		Dim strLineOut As String
 

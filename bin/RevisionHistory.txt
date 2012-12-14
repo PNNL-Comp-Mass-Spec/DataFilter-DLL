@@ -1,5 +1,8 @@
 DataFilter.NET Change Log
 
+Version 1.2.4731; December 14, 2012
+	- Updated to .NET 4
+
 Version 1.2.4281; September 21, 2011
 	- Ported the Numerical Recipes in C code from C to C#
 		- See SavGolCS.dll
