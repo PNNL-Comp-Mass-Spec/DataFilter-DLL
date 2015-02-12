@@ -1,5 +1,8 @@
 DataFilter.NET Change Log
 
+Version 1.2.5520; January 11, 2015
+	- Now compiling as AnyCPU
+
 Version 1.2.4731; December 14, 2012
 	- Updated to .NET 4
 
