@@ -1,175 +1,193 @@
-Option Strict On
+using System;
 
-Public Class clsButterworthFilter
+namespace DataFilter
+{
+    public class ButterworthFilter
+    {
 
-    ' The following function is from the XPRESS software, written by Jimmy Eng
-    ' http://cvs.sourceforge.net/viewcvs.py/sashimi/XPRESS-RAMP/addxpress3.c?rev=1.13&view=markup
+        /// <summary>
+        /// Butterworth Filter
+        /// </summary>
+        /// <param name="zeroBased1DArray"></param>
+        /// <param name="indexStart"></param>
+        /// <param name="indexEnd"></param>
+        /// <returns></returns>
+        /// <remarks>
+        /// From the XPRESS software, written by Jimmy Eng
+        /// http://cvs.sourceforge.net/viewcvs.py/sashimi/XPRESS-RAMP/addxpress3.c?rev=1.13&view=markup
+        /// </remarks>
+        public bool FilterData(float[] zeroBased1DArray, int indexStart, int indexEnd)
+        {
+            bool processingDataSubset;
 
-    Public Function FilterData(ByRef ZeroBased1DArray() As Single, ByVal IndexStart As Integer, ByVal IndexEnd As Integer) As Boolean
+            double[] tmpFilter;
 
-        Dim i As Integer
-        Dim ii As Integer
+            // Define 5th order Butterworth filter w/ cut-off frequency
+            // of 0.15 where 1.0 corresponds to half the sample rate.
 
-        Dim blnProcessingDataSubset As Boolean
+            const int FILTER_SIZE = 6;
+            var a = new[] {1.0, -3.4789, 5.0098, -3.6995, 1.3942, -0.2138};
+            var b = new[] {0.0004, 0.0018, 0.0037, 0.0037, 0.0018, 0.0004};
 
-        Dim intDataCount As Integer
+            if (zeroBased1DArray == null || zeroBased1DArray.Length <= 0)
+                return false;
 
-        Dim dTmpFilter() As Double
-        Dim dFilteredMS() As Double     ' Filtered data out
+            // Copy data from zeroBased1DArray to tmpFilter, only copying a certain range if indexStart and indexEnd are >= 0
+            if (indexStart < 0 ||
+                indexEnd < 0 ||
+                indexEnd < indexStart)
+            {
+                processingDataSubset = false;
+                tmpFilter = new double[zeroBased1DArray.Length - 1];
+                zeroBased1DArray.CopyTo(tmpFilter, 0);
+            }
+            else
+            {
+                processingDataSubset = true;
+                tmpFilter = new double[indexEnd - indexStart];
+                for (var i = indexStart; i <= indexEnd; i++)
+                {
+                    tmpFilter[i - indexStart] = zeroBased1DArray[i];
+                }
+            }
 
-        '
-        ' Define 5th order butterworth filter w/ cut-off frequency
-        ' of 0.15 where 1.0 corresponds to half the sample rate.
-        '
-        Const FILTER_SIZE As Integer = 6
-        Dim a() As Double = New Double() {1.0, -3.4789, 5.0098, -3.6995, 1.3942, -0.2138}
-        Dim b() As Double = New Double() {0.0004, 0.0018, 0.0037, 0.0037, 0.0018, 0.0004}
+            var dataCount = tmpFilter.Length;
 
-        If ZeroBased1DArray Is Nothing OrElse ZeroBased1DArray.Length <= 0 Then Return False
+            // Pass MS profile through IIR low pass filter:
+            // y(n) = b(1)*x(n) + b(2)*x(n-1) + ... + b(nb+1)*x(n-nb) -
+            //        a(2)*y(n-1) - ... - a(na+1)*y(n-na)
 
+            var filteredData = new double[dataCount - 1];
+            for (var i = 0; i < dataCount; i++)
+            {
+                filteredData[i] = b[0] * tmpFilter[i];
 
-        ' Copy data from ZeroBased1DArray to dTmpFilter, only copying a certain range if IndexStart and IndexEnd are >= 0
-        If IndexStart < 0 Or IndexEnd < 0 Or IndexEnd < IndexStart Then
-            blnProcessingDataSubset = False
+                for (var j = 1; j < FILTER_SIZE; j++)
+                {
+                    if (i - j >= 0)
+                    {
+                        filteredData[i] += b[j] * tmpFilter[i - j];
+                        filteredData[i] -= a[j] * filteredData[i - j];
+                    }
+                }
+            }
 
-            ReDim dTmpFilter(ZeroBased1DArray.Length - 1)
-            ZeroBased1DArray.CopyTo(dTmpFilter, 0)
-        Else
-            blnProcessingDataSubset = True
+            // Filtered data is reversed and re-filtered resulting
+            // in zero-phase distortion and double the filter order.
 
-            ReDim dTmpFilter(IndexEnd - IndexStart)
-            For i = IndexStart To IndexEnd
-                dTmpFilter(i - IndexStart) = ZeroBased1DArray(i)
-            Next i
-        End If
+            Array.Reverse(filteredData);
+            filteredData.CopyTo(tmpFilter, 0);
 
-        intDataCount = dTmpFilter.Length
+            filteredData = new double[dataCount - 1];
+            for (var i = 0; i < dataCount; i++)
+            {
+                filteredData[i] = b[0] * tmpFilter[i];
+                for (var j = 1; j < FILTER_SIZE; j++)
+                {
+                    if (i - j >= 0)
+                    {
+                        filteredData[i] += b[j] * tmpFilter[i - j];
+                        filteredData[i] -= a[j] * filteredData[i - j];
+                    }
+                }
+            }
 
-        ' Pass MS profile through IIR low pass filter:
-        ' y(n) = b(1)*x(n) + b(2)*x(n-1) + ... + b(nb+1)*x(n-nb)
-        '        - a(2)*y(n-1) - ... - a(na+1)*y(n-na)
+            // Filtered data is reversed again
+            Array.Reverse(filteredData);
 
-        ReDim dFilteredMS(intDataCount - 1)
-        For i = 0 To intDataCount - 1
-            dFilteredMS(i) = b(0) * dTmpFilter(i)
+            // Update zeroBased1DArray with the filtered data
+            if (processingDataSubset)
+            {
+                for (var i = 0; i < dataCount; i++)
+                {
+                    zeroBased1DArray[i + indexStart] = (float)filteredData[i];
+                }
+            }
+            else
+            {
+                for (var i = 0; i < dataCount; i++)
+                {
+                    zeroBased1DArray[i] = (float)filteredData[i];
+                }
+            }
 
-            For ii = 1 To FILTER_SIZE - 1
-                If i - ii >= 0 Then
-                    dFilteredMS(i) += b(ii) * dTmpFilter(i - ii)
-                    dFilteredMS(i) -= a(ii) * dFilteredMS(i - ii)
-                End If
-            Next ii
-        Next i
+            return true;
 
-        ' Filtered sequence is reversed and re-filtered resulting
-        ' in zero-phase distortion and double the filter order.
+        }
 
-        Array.Reverse(dFilteredMS)
-        dFilteredMS.CopyTo(dTmpFilter, 0)
+        // /*
+        //  * C-based filter
+        //  */
+        // void FILTER_MS(double *dOrigMS,
+        //         double *filteredData)
+        // {
+        //    int  i,
+        //         iArraySize=MAX_MS_SCAN*sizeof(double);
+        //    double tmpFilter[MAX_MS_SCAN];
+        //
+        //    /*
+        //     * Defines 5th order butterworth filter w/ cut-off frequency
+        //     * of 0.15 where 1.0 corresponse to half the sample rate.
+        //     */
+        //    double a[FILTER_SIZE]={1.0000, -3.4789, 5.0098, -3.6995, 1.3942, -0.2138},
+        //           b[FILTER_SIZE]={0.0004, 0.0018, 0.0037, 0.0037, 0.0018, 0.0004};
+        //
+        //    memset(filteredData, 0, iArraySize);
+        //    memcpy(tmpFilter, dOrigMS, sizeof(tmpFilter));
+        //
+        //    /*
+        //     * Pass MS profile through IIR low pass filter:
+        //     * y(n) = b(1)*x(n) + b(2)*x(n-1) + ... + b(nb+1)*x(n-nb)
+        //     *      - a(2)*y(n-1) - ... - a(na+1)*y(n-na)
+        //     */
+        //    for (i=0; i<MAX_MS_SCAN; i++)
+        //    {
+        //       int ii;
+        //
+        //       filteredData[i]=b[0]*tmpFilter[i];
+        //       for (ii=1;ii<FILTER_SIZE;ii++)
+        //       {
+        //          if ((i-ii)>=0)
+        //          {
+        //             filteredData[i] += b[ii]*tmpFilter[i-ii];
+        //             filteredData[i] -= a[ii]*filteredData[i-ii];
+        //          }
+        //       }
+        //    }
+        //
+        //    /*
+        //     * Filtered sequence is reversed and re-filtered resulting
+        //     * in zero-phase distortion and double the filter order.
+        //     */
+        //    for (i=0; i<MAX_MS_SCAN; i++)
+        //       tmpFilter[i]=filteredData[MAX_MS_SCAN-1-i];
+        //
+        //    memset(filteredData, 0, iArraySize);
+        //    for (i=0; i<MAX_MS_SCAN; i++)
+        //    {
+        //       int ii;
+        //
+        //       filteredData[i]=b[0]*tmpFilter[i];
+        //       for (ii=1;ii<FILTER_SIZE;ii++)
+        //       {
+        //          if ((i-ii)>=0)
+        //          {
+        //             filteredData[i] += b[ii]*tmpFilter[i-ii];
+        //             filteredData[i] -= a[ii]*filteredData[i-ii];
+        //          }
+        //       }
+        //    }
+        //
+        //    /*
+        //     * Filtered sequence is reversed again
+        //     */
+        //    for (i=0; i<MAX_MS_SCAN; i++)
+        //       tmpFilter[i]=filteredData[MAX_MS_SCAN-1-i];
+        //
+        //    memcpy(filteredData, tmpFilter, iArraySize);
+        //
+        // } /*FILTER_MS*/
+        //
 
-        ReDim dFilteredMS(intDataCount - 1)
-        For i = 0 To intDataCount - 1
-            dFilteredMS(i) = b(0) * dTmpFilter(i)
-
-            For ii = 1 To FILTER_SIZE - 1
-                If i - ii >= 0 Then
-                    dFilteredMS(i) += b(ii) * dTmpFilter(i - ii)
-                    dFilteredMS(i) -= a(ii) * dFilteredMS(i - ii)
-                End If
-            Next ii
-        Next i
-
-
-        ' Filtered sequence is reversed again
-        Array.Reverse(dFilteredMS)
-
-        ' Update ZeroBased1DArray with the filtered data
-        If blnProcessingDataSubset Then
-            For i = 0 To intDataCount - 1
-                ZeroBased1DArray(i + IndexStart) = CSng(dFilteredMS(i))
-            Next i
-        Else
-            For i = 0 To intDataCount - 1
-                ZeroBased1DArray(i) = CSng(dFilteredMS(i))
-            Next i
-        End If
-
-        Return True
-    
-    End Function
-
-    ' /*
-    '  * Use my standard filtering routine
-    '  */
-    ' void FILTER_MS(double *dOrigMS,
-    '         double *dFilteredMS)
-    ' {
-    '    int  i,
-    '         iArraySize=MAX_MS_SCAN*sizeof(double);
-    '    double dTmpFilter[MAX_MS_SCAN];
-    ' 
-    '    /*
-    '     * Defines 5th order butterworth filter w/ cut-off frequency
-    '     * of 0.15 where 1.0 corresponse to half the sample rate.
-    '     */
-    '    double a[FILTER_SIZE]={1.0000, -3.4789, 5.0098, -3.6995, 1.3942, -0.2138},
-    '           b[FILTER_SIZE]={0.0004, 0.0018, 0.0037, 0.0037, 0.0018, 0.0004};
-    ' 
-    '    memset(dFilteredMS, 0, iArraySize);
-    '    memcpy(dTmpFilter, dOrigMS, sizeof(dTmpFilter));
-    ' 
-    '    /*
-    '     * Pass MS profile through IIR low pass filter:
-    '     * y(n) = b(1)*x(n) + b(2)*x(n-1) + ... + b(nb+1)*x(n-nb)
-    '     *      - a(2)*y(n-1) - ... - a(na+1)*y(n-na)
-    '     */
-    '    for (i=0; i<MAX_MS_SCAN; i++)
-    '    {
-    '       int ii;
-    ' 
-    '       dFilteredMS[i]=b[0]*dTmpFilter[i];
-    '       for (ii=1;ii<FILTER_SIZE;ii++)
-    '       {
-    '          if ((i-ii)>=0)
-    '          {
-    '             dFilteredMS[i] += b[ii]*dTmpFilter[i-ii];
-    '             dFilteredMS[i] -= a[ii]*dFilteredMS[i-ii];
-    '          }
-    '       }
-    '    }
-    ' 
-    '    /*
-    '     * Filtered sequence is reversed and re-filtered resulting
-    '     * in zero-phase distortion and double the filter order.
-    '     */
-    '    for (i=0; i<MAX_MS_SCAN; i++)
-    '       dTmpFilter[i]=dFilteredMS[MAX_MS_SCAN-1-i];
-    ' 
-    '    memset(dFilteredMS, 0, iArraySize);
-    '    for (i=0; i<MAX_MS_SCAN; i++)
-    '    {
-    '       int ii;
-    ' 
-    '       dFilteredMS[i]=b[0]*dTmpFilter[i];
-    '       for (ii=1;ii<FILTER_SIZE;ii++)
-    '       {
-    '          if ((i-ii)>=0)
-    '          {
-    '             dFilteredMS[i] += b[ii]*dTmpFilter[i-ii];
-    '             dFilteredMS[i] -= a[ii]*dFilteredMS[i-ii];
-    '          }
-    '       }
-    '    }
-    ' 
-    '    /*
-    '     * Filtered sequence is reversed again
-    '     */
-    '    for (i=0; i<MAX_MS_SCAN; i++)
-    '       dTmpFilter[i]=dFilteredMS[MAX_MS_SCAN-1-i];
-    ' 
-    '    memcpy(dFilteredMS, dTmpFilter, iArraySize);
-    ' 
-    ' } /*FILTER_MS*/
-    ' 
-
-End Class
+    }
+}
