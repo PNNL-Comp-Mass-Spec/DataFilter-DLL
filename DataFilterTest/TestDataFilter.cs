@@ -22,6 +22,7 @@ namespace DataFilterTest
             var dblData = new double[dataPointCount];
 
             var objFilter = new DataFilter.DataFilter();
+            var objButterworthFilter = new DataFilter.ButterworthFilter();
 
             if (amplitude < 1) amplitude = 1;
             if (noiseLevel < 1) noiseLevel = 1;
@@ -46,7 +47,11 @@ namespace DataFilterTest
             }
 
             var dblDataCopy = new double[dataPointCount];
+            var sngDataCopy = new float[dataPointCount];
             dblData.CopyTo(dblDataCopy, 0);
+
+            for (var i = 0; i < dblData.Length; i++)
+                sngDataCopy[i] = (float)dblData[i];
 
             var success = objFilter.SavitzkyGolayFilter(
                 dblData, 0, dataPointCount - 1,
@@ -60,11 +65,13 @@ namespace DataFilterTest
 
             objFilter.ButterworthFilter(dblDataCopy, 0, dataPointCount - 1);
 
+            objButterworthFilter.FilterData(sngDataCopy, 0, dataPointCount - 1);
+
             Console.WriteLine();
-            Console.WriteLine("SavGolayFilter\tButterworthFilter");
+            Console.WriteLine("SavGolayFilter\tButterworthFilter1\tButterworthFilter2");
             for (var i = 0; i < dataPointCount; i++)
             {
-                Console.WriteLine(dblData[i] + "\t" + dblDataCopy[i]);
+                Console.WriteLine(dblData[i] + "\t" + dblDataCopy[i] + "\t" + sngDataCopy[i]);
             }
 
         }
