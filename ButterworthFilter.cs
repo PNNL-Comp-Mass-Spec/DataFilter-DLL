@@ -38,13 +38,13 @@ namespace DataFilter
                 indexEnd < indexStart)
             {
                 processingDataSubset = false;
-                tmpFilter = new double[zeroBased1DArray.Length - 1];
+                tmpFilter = new double[zeroBased1DArray.Length];
                 zeroBased1DArray.CopyTo(tmpFilter, 0);
             }
             else
             {
                 processingDataSubset = true;
-                tmpFilter = new double[indexEnd - indexStart];
+                tmpFilter = new double[indexEnd - indexStart + 1];
                 for (var i = indexStart; i <= indexEnd; i++)
                 {
                     tmpFilter[i - indexStart] = zeroBased1DArray[i];
@@ -57,7 +57,7 @@ namespace DataFilter
             // y(n) = b(1)*x(n) + b(2)*x(n-1) + ... + b(nb+1)*x(n-nb) -
             //        a(2)*y(n-1) - ... - a(na+1)*y(n-na)
 
-            var filteredData = new double[dataCount - 1];
+            var filteredData = new double[dataCount];
             for (var i = 0; i < dataCount; i++)
             {
                 filteredData[i] = b[0] * tmpFilter[i];
@@ -78,7 +78,7 @@ namespace DataFilter
             Array.Reverse(filteredData);
             filteredData.CopyTo(tmpFilter, 0);
 
-            filteredData = new double[dataCount - 1];
+            filteredData = new double[dataCount];
             for (var i = 0; i < dataCount; i++)
             {
                 filteredData[i] = b[0] * tmpFilter[i];

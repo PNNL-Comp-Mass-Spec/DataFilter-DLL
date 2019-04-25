@@ -71,13 +71,13 @@ namespace DataFilter
                 indexEnd < indexStart)
             {
                 processingDataSubset = false;
-                tmpFilter = new double[zeroBased1DArray.Length - 1];
+                tmpFilter = new double[zeroBased1DArray.Length];
                 zeroBased1DArray.CopyTo(tmpFilter, 0);
             }
             else
             {
                 processingDataSubset = true;
-                tmpFilter = new double[indexEnd - indexStart];
+                tmpFilter = new double[indexEnd - indexStart + 1];
                 for (var i = indexStart; i <= indexEnd; i++)
                 {
                     tmpFilter[i - indexStart] = zeroBased1DArray[i];
@@ -90,7 +90,7 @@ namespace DataFilter
             // y(n) = b(1)*x(n) + b(2)*x(n-1) + ... + b(nb+1)*x(n-nb) -
             //        a(2)*y(n-1) - ... - a(na+1)*y(n-na)
 
-            var filteredData = new double[dataCount - 1];
+            var filteredData = new double[dataCount];
             for (var i = 0; i < dataCount; i++)
             {
                 filteredData[i] = b[0] * tmpFilter[i];
@@ -111,7 +111,7 @@ namespace DataFilter
             Array.Reverse(filteredData);
             filteredData.CopyTo(tmpFilter, 0);
 
-            filteredData = new double[dataCount - 1];
+            filteredData = new double[dataCount];
             for (var i = 0; i < dataCount; i++)
             {
                 filteredData[i] = b[0] * tmpFilter[i];
@@ -163,13 +163,13 @@ namespace DataFilter
 
             const int FREQ_LEVEL_COUNT = 99;
 
-            a = new double[BUTTERWORTH_FILTER_ORDER];
-            b = new double[BUTTERWORTH_FILTER_ORDER];
+            a = new double[BUTTERWORTH_FILTER_ORDER + 1];
+            b = new double[BUTTERWORTH_FILTER_ORDER + 1];
 
             if (!mArraysInitialized)
             {
-                AC = new double[FREQ_LEVEL_COUNT - 1, BUTTERWORTH_FILTER_ORDER];
-                BC = new double[FREQ_LEVEL_COUNT - 1, BUTTERWORTH_FILTER_ORDER];
+                AC = new double[FREQ_LEVEL_COUNT, BUTTERWORTH_FILTER_ORDER + 1];
+                BC = new double[FREQ_LEVEL_COUNT, BUTTERWORTH_FILTER_ORDER + 1];
 
                 // The following define the filter coefficients for sample rates of 0.01 tfo 0.99, in steps of 0.01
 
@@ -347,7 +347,7 @@ namespace DataFilter
 
             try
             {
-                var smoothedData = new double[zeroBased1DArray.Length - 1];
+                var smoothedData = new double[zeroBased1DArray.Length];
                 zeroBased1DArray.CopyTo(smoothedData, 0);
 
                 for (var currentIndex = indexStart; currentIndex <= indexEnd; currentIndex++)
@@ -441,7 +441,7 @@ namespace DataFilter
             // }
 
             var numPointsTotal = numPointsLeft + numPointsRight + 1;
-            var c = new double[numPointsTotal];
+            var c = new double[numPointsTotal + 1];
 
             var objSavGol = new NRSavGol();
             objSavGol.savgol(c, numPointsTotal, numPointsLeft, numPointsRight, 0, polynomialDegree);
@@ -453,7 +453,7 @@ namespace DataFilter
                 n = numPointsLeft * 2;
             }
 
-            var CC = new double[n];
+            var CC = new double[n + 1];
             for (var i = 0; i <= numPointsLeft; i++)
             {
                 CC[(int)(Math.Floor(n / 2.0 - i))] = c[i + 1];
@@ -496,10 +496,10 @@ namespace DataFilter
             }
 
             // Reserve space for Y()
-            var Y = new double[width * 2 + 1];
+            var Y = new double[width * 2 + 2];
 
             // Reserve space for a temporary buffer to hold the results of the smooth
-            var tempBuffer = new double[zeroBased1DArray.Length - 1];
+            var tempBuffer = new double[zeroBased1DArray.Length];
 
             // Copy data from input array to temporary buffer
             zeroBased1DArray.CopyTo(tempBuffer, 0);
