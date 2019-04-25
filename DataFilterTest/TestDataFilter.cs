@@ -1,24 +1,10 @@
 using System;
-using Microsoft.VisualBasic;
 using NUnit.Framework;
 
 namespace DataFilterTest
 {
     public class Tests
     {
-        private double[] mDataToSmooth;
-
-        [SetUp]
-        public void Setup()
-        {
-            mDataToSmooth = new double[30];
-            var rand = new Random(314);
-
-            for (var i = 0; i < mDataToSmooth.Length; i++)
-            {
-                mDataToSmooth[i] = Math.Sin(i / (double)mDataToSmooth.Length) + rand.NextDouble() / 20;
-            }
-        }
 
         [Test]
         [TestCase(100, 3, 3, 0, 5, 1, true, 314)]
