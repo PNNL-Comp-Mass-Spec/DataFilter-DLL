@@ -5,7 +5,7 @@ VisualStudioVersion = 16.0.28803.202
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataFilter", "DataFilter.csproj", "{253DFDE5-85C5-463D-AABB-49DCAD93EAB1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataFilterTest", "DataFilterTest\DataFilterTest\DataFilterTest.csproj", "{E4E2932B-0811-4EDF-8311-F31994DC0463}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataFilterTest", "DataFilterTest\DataFilterTest.csproj", "{E4E2932B-0811-4EDF-8311-F31994DC0463}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

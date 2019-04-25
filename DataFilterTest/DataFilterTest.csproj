@@ -51,7 +51,7 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\DataFilter.csproj">
+    <ProjectReference Include="..\DataFilter.csproj">
       <Project>{253dfde5-85c5-463d-aabb-49dcad93eab1}</Project>
       <Name>DataFilter</Name>
     </ProjectReference>

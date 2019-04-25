@@ -5,8 +5,6 @@ VisualStudioVersion = 16.0.28803.202
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DataFilter_DotNETCore", "DataFilter_DotNETCore.csproj", "{4253A56A-9159-445B-8F98-5CC1D12456B0}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DataFilterTest", "DataFilterTest\DataFilterTest.csproj", "{FBA664A1-AE45-4D89-B664-F54BEF54FE8E}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -17,10 +15,6 @@ Global
 		{4253A56A-9159-445B-8F98-5CC1D12456B0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4253A56A-9159-445B-8F98-5CC1D12456B0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4253A56A-9159-445B-8F98-5CC1D12456B0}.Release|Any CPU.Build.0 = Release|Any CPU
-		{FBA664A1-AE45-4D89-B664-F54BEF54FE8E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{FBA664A1-AE45-4D89-B664-F54BEF54FE8E}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{FBA664A1-AE45-4D89-B664-F54BEF54FE8E}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{FBA664A1-AE45-4D89-B664-F54BEF54FE8E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
