@@ -1,0 +1,50 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.2</TargetFramework>
+    <AssemblyName>DataFilter</AssemblyName>
+    <RootNamespace>DataFilter</RootNamespace>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <OutputPath>bin\DotNETCore\Debug</OutputPath>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <OutputPath>bin\DotNETCore\Release</OutputPath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="DataFilterTest\**" />
+    <Compile Remove="DataFilter_SourceCode\**" />
+    <Compile Remove="SavGolCS\**" />
+    <Compile Remove="SavGolWrapper.NET\**" />
+    <Compile Remove="TestDataFilter\**" />
+    <Compile Remove="VB6_Source\**" />
+    <EmbeddedResource Remove="DataFilterTest\**" />
+    <EmbeddedResource Remove="DataFilter_SourceCode\**" />
+    <EmbeddedResource Remove="SavGolCS\**" />
+    <EmbeddedResource Remove="SavGolWrapper.NET\**" />
+    <EmbeddedResource Remove="TestDataFilter\**" />
+    <EmbeddedResource Remove="VB6_Source\**" />
+    <None Remove="DataFilterTest\**" />
+    <None Remove="DataFilter_SourceCode\**" />
+    <None Remove="SavGolCS\**" />
+    <None Remove="SavGolWrapper.NET\**" />
+    <None Remove="TestDataFilter\**" />
+    <None Remove="VB6_Source\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="savgol.c.txt" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Properties\" />
+  </ItemGroup>
+
+</Project>
