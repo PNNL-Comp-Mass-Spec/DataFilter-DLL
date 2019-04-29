@@ -1,84 +1,98 @@
-﻿Module modMain
+﻿using System;
+using System.IO;
 
-	Sub Main()
+namespace TestDataFilter
+{
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            TestFilter(1000, 3, 3, 0, 5, 1);
+        }
 
-		TestFilter(1000, 3, 3, 0, 5, 1, True)
+        private static void TestFilter(int dataPointCount = 100,
+            int numPointsLeft = 3,
+            int numPointsRight = 3,
+            short polynomialDegree = 0,
+            int amplitude = 5,
+            int noiseLevel = 1)
+        {
 
-	End Sub
+            var dataSG = new double[dataPointCount];
 
-	Private Sub TestFilter(Optional ByVal intDataPointCount As Integer = 100, _
-	  Optional ByVal NumPointsLeft As Integer = 3, _
-	  Optional ByVal NumPointsRight As Integer = 3, _
-	  Optional ByVal PolynomialDegree As Short = 0, _
-	  Optional ByVal intAmplitude As Integer = 5, _
-	  Optional ByVal intNoiseLevel As Integer = 1, _
-	  Optional ByVal blnRandomize As Boolean = True)
+            var filter = new DataFilter.DataFilter();
 
-		Dim dblDataUnsmoothed() As Double
-		Dim dblDataSG() As Double
-		Dim dblDataButterworth() As Double
+            if (amplitude < 1) amplitude = 1;
+            if (noiseLevel < 1) noiseLevel = 1;
 
-		ReDim dblDataSG(intDataPointCount - 1)
+            var rand = new Random(314);
 
-		Dim intIndex As Integer
+            for (var i = 0; i < dataPointCount; i++)
+            {
+                dataSG[i] = amplitude * (Math.Sin(i / dataPointCount * 4) + rand.NextDouble() / (amplitude / 10.0) * noiseLevel);
+                if (i > 0.4 * dataPointCount && i < 0.7 * dataPointCount)
+                {
+                    dataSG[i] = dataSG[i] * Math.Abs(i - 0.55 * dataPointCount) * 2;
+                }
+            }
 
-		Dim objFilter As New DataFilter.clsDataFilter()
+            var dataUnsmoothed = new double[dataPointCount];
+            var dataButterworth = new double[dataPointCount];
 
-		If intAmplitude < 1 Then intAmplitude = 1
-		If intNoiseLevel < 1 Then intNoiseLevel = 1
+            dataSG.CopyTo(dataUnsmoothed, 0);
+            dataSG.CopyTo(dataButterworth, 0);
 
-		If blnRandomize Then Randomize()
+            filter.SavitzkyGolayFilter(dataSG, 0, dataPointCount - 1, numPointsLeft, numPointsRight, polynomialDegree, out _);
+            filter.ButterworthFilter(dataButterworth, 0, dataPointCount - 1);
 
-		Console.WriteLine("Source Data", "TestFilter")
-		For intIndex = 0 To intDataPointCount - 1
-			dblDataSG(intIndex) = intAmplitude * (Math.Sin(intIndex / intDataPointCount * 4) + Rnd(1) / (intAmplitude / 10) * intNoiseLevel)
-			If intIndex > 0.4 * intDataPointCount And intIndex < 0.7 * intDataPointCount Then
-				dblDataSG(intIndex) = dblDataSG(intIndex) * Math.Abs(intIndex - 0.55 * intDataPointCount) * 2
-			End If
-		Next intIndex
+            var iterator = 1;
+            var filePath = string.Empty;
+            StreamWriter writer = null;
+            var success = false;
 
-		ReDim dblDataUnsmoothed(intDataPointCount - 1)
-		ReDim dblDataButterworth(intDataPointCount - 1)
+            while (!success && iterator < 100)
+            {
+                try
+                {
+                    filePath = @"..\DataSmoothTest" + iterator + ".txt";
+                    writer = new StreamWriter(new FileStream(filePath, FileMode.Create, FileAccess.Write, FileShare.Read));
+                    success = true;
+                }
+                catch
+                {
+                    iterator += 1;
+                }
+            }
 
-		dblDataSG.CopyTo(dblDataUnsmoothed, 0)
-		dblDataSG.CopyTo(dblDataButterworth, 0)
+            Console.WriteLine("");
+            var headerLine = string.Format("{0,-15}{1,-25}{2,-25}", "Unsmoothed", "SavitzkyGolayFilter", "ButterworthFilter");
+            var headerLineTabs = string.Format("{0}\t{1}\t{2}", "Unsmoothed", "SavitzkyGolayFilter", "ButterworthFilter");
 
-		objFilter.SavitzkyGolayFilter(dblDataSG, 0, intDataPointCount - 1, 3, 3, 0)
-		objFilter.ButterworthFilter(dblDataButterworth, 0, intDataPointCount - 1)
+            Console.WriteLine(headerLine);
+            writer?.WriteLine(headerLineTabs);
 
-		Dim intIterator As Integer = 1
-		Dim strFilePath As String = ""
-		Dim srOutFile As System.IO.StreamWriter = Nothing
-		Dim blnSuccess As Boolean
-		Dim strLineOut As String
+            for (var i = 0; i < dataPointCount; i++)
+            {
+                var outLine = string.Format("{0,-15:F3}{1,-25:F3}{2,-25:F3}", dataUnsmoothed[i], dataSG[i], dataButterworth[i]);
+                var outLineTabs = string.Format("{0:F3}\t{1:F3}\t{2:F3}", dataUnsmoothed[i], dataSG[i], dataButterworth[i]);
 
-		Do
-			Try
-				strFilePath = "DataSmoothTest" & intIterator & ".txt"
-				srOutFile = New System.IO.StreamWriter(New System.IO.FileStream(strFilePath, IO.FileMode.Create, IO.FileAccess.Write, IO.FileShare.Read))
-				blnSuccess = True
-			Catch ex As Exception
-				intIterator += 1
-			End Try
-		Loop While Not blnSuccess And intIterator < 100
+                Console.WriteLine(outLine);
+                writer?.WriteLine(outLineTabs);
+            }
 
-		Console.WriteLine("")
-		strLineOut = "Unsmoothed" & ControlChars.Tab & "SavGolayFilter" & ControlChars.Tab & "ButterworthFilter"
-		Console.WriteLine(strLineOut)
+            if (writer != null)
+            {
+                writer.Close();
+                Console.WriteLine();
+                Console.WriteLine("Note: data has been written to file " + filePath);
+            }
+            else
+            {
+                Console.WriteLine("Data was not written to a file");
+            }
 
-		If Not srOutFile Is Nothing Then srOutFile.WriteLine(strLineOut)
+            System.Threading.Thread.Sleep(2000);
+        }
 
-		For intIndex = 0 To intDataPointCount - 1
-			strLineOut = dblDataUnsmoothed(intIndex) & ControlChars.Tab & dblDataSG(intIndex) & ControlChars.Tab & dblDataButterworth(intIndex)
-			Console.WriteLine(strLineOut)
-			If Not srOutFile Is Nothing Then srOutFile.WriteLine(strLineOut)
-		Next intIndex
-
-		If Not srOutFile Is Nothing Then srOutFile.Close()
-
-		Console.WriteLine()
-		Console.WriteLine("Note: data has been written to file " & strFilePath)
-
-	End Sub
-
-End Module
+    }
+}
